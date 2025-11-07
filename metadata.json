@@ -1,0 +1,5 @@
+{
+  "name": "PMO Data Center BD Supabase",
+  "description": "An application for the governance and monitoring of Data Center actions, featuring a Kanban board, dashboards for alerts, compliance tracking, and automated reporting functionalities.",
+  "requestFramePermissions": []
+}
