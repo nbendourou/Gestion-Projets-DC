@@ -33,6 +33,7 @@ const NonConformitesView: React.FC<NonConformitesViewProps> = ({ nonConformites,
                                 <th scope="col" className="px-6 py-3 w-[15%]">Type</th>
                                 <th scope="col" className="px-6 py-3 w-1/3">Description</th>
                                 <th scope="col" className="px-6 py-3 w-[12%]">Responsable</th>
+                                <th scope="col" className="px-6 py-3 w-[8%]">Photo</th>
                                 <th scope="col" className="px-6 py-3 w-[10%]">Date Constat</th>
                                 <th scope="col" className="px-6 py-3 w-[10%]">Statut</th>
                                 <th scope="col" className="px-6 py-3 w-[10%]">Date Clôture</th>
@@ -48,6 +49,15 @@ const NonConformitesView: React.FC<NonConformitesViewProps> = ({ nonConformites,
                                     <td className="px-6 py-4 truncate">{nc.typeNonConformite}</td>
                                     <td className="px-6 py-4 truncate" title={nc.description}>{nc.description}</td>
                                     <td className="px-6 py-4 truncate">{contacts.find(c => c.id === nc.respAction)?.lastName || nc.respAction}</td>
+                                    <td className="px-6 py-4">
+                                        {nc.photoUrl ? (
+                                            <img src={nc.photoUrl} alt="Aperçu" className="h-10 w-10 object-cover rounded-md" />
+                                        ) : (
+                                            <div className="h-10 w-10 bg-gray-700 rounded-md flex items-center justify-center text-gray-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                            </div>
+                                        )}
+                                    </td>
                                     <td className="px-6 py-4">{new Date(nc.dateConstat).toLocaleDateString()}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2 py-1 text-xs rounded-full ${nc.statut === 'Ouverte' ? 'bg-yellow-500/30 text-yellow-200' : 'bg-green-500/30 text-green-200'}`}>
@@ -61,7 +71,7 @@ const NonConformitesView: React.FC<NonConformitesViewProps> = ({ nonConformites,
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan={8} className="text-center py-10 text-gray-500">Aucune non-conformité mineure enregistrée.</td>
+                                    <td colSpan={9} className="text-center py-10 text-gray-500">Aucune non-conformité mineure enregistrée.</td>
                                 </tr>
                             )}
                         </tbody>

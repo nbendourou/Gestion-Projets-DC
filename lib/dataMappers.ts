@@ -51,6 +51,7 @@ export const dbToNonConformite = (db: any): NonConformiteMineure => ({
     dateConstat: db.date_constat,
     statut: db.statut,
     dateCloture: db.date_cloture,
+    photoUrl: db.photo_url,
 });
 export const dbToQualiteHSE = (db: any): QualiteHSE => ({
     id: db.id,
@@ -130,6 +131,7 @@ export const nonConformiteToDb = (nc: NonConformiteMineure) => ({
     date_constat: nc.dateConstat,
     statut: nc.statut,
     date_cloture: nc.dateCloture,
+    photo_url: nc.photoUrl,
 });
 export const qualiteHSEToDb = (q: QualiteHSE) => ({
     id: q.id,

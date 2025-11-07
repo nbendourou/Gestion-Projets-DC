@@ -84,6 +84,7 @@ export interface NonConformiteMineure {
     dateConstat: string;
     statut: 'Ouverte' | 'Clôturée';
     dateCloture?: string | null;
+    photoUrl?: string | null;
 }
 
 export interface QualiteHSE {
