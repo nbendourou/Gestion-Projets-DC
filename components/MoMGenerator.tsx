@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { GoogleGenAI } from '@google/genai';
 import type { Action, Contact, Historique, NonConformiteMineure } from '../types.ts';
 import { StatutKanban } from '../types.ts';
 
@@ -20,7 +19,7 @@ const MoMGenerator: React.FC<MoMGeneratorProps> = ({ actions, contacts, historiq
         return contact ? `${contact.firstName} ${contact.lastName}` : `ID:${id}`;
     };
 
-    const generatePrompt = () => {
+    const generateMoMTemplate = () => {
         const actionsEnRetard = actions.filter(a => new Date(a.derniereLimite) < new Date() && a.statutKanban !== StatutKanban.CLOTURE);
         const actionsClotureesRecemment = actions.filter(a => {
             const history = historique.filter(h => h.idActionRef === a.id && h.typeEvenement === 'Changement de statut' && h.evenementDetail.includes(StatutKanban.CLOTURE));
@@ -47,13 +46,6 @@ const MoMGenerator: React.FC<MoMGeneratorProps> = ({ actions, contacts, historiq
             : "<p style='color: #a0aec0;'>Aucune action clôturée récemment.</p>";
 
         return `
-            Rédige un corps d'e-mail professionnel et concis au format HTML pour un compte rendu de réunion (Minute of Meeting).
-            Utilise uniquement des styles CSS inline pour une compatibilité maximale avec les clients de messagerie.
-            Le fond doit être sombre (#2d3748) et le texte clair (#e2e8f0).
-            Ne pas inclure de balises <html>, <head>, ou <body>, juste le contenu pour le corps de l'e-mail.
-
-            Voici la structure et les données à utiliser :
-
             <div style="font-family: Arial, sans-serif; color: #e2e8f0; background-color: #2d3748; padding: 20px; border-radius: 8px;">
                 <h1 style="color: #ffffff; border-bottom: 2px solid #4a5568; padding-bottom: 10px;">Compte Rendu de Réunion PMO</h1>
                 <p style="font-size: 1.1em;"><strong>Date :</strong> ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
@@ -87,7 +79,7 @@ const MoMGenerator: React.FC<MoMGeneratorProps> = ({ actions, contacts, historiq
                 ${actionsClotureesHtml}
                 
                 <h2 style="color: #ffffff; margin-top: 25px;">4. Prochaines Étapes et Décisions</h2>
-                <p>Synthétise ici les décisions clés et les prochaines étapes. Met l'accent sur la résolution urgente des actions en retard et des points de blocage. Rappelle aux responsables de mettre à jour leurs statuts.</p>
+                <p style="color: #a0aec0;">[À COMPLÉTER PAR LE PMO : Lister ici les décisions clés et les prochaines étapes. Rappeler aux responsables de mettre à jour leurs statuts.]</p>
                 
                 <p style="margin-top: 25px; border-top: 1px solid #4a5568; padding-top: 15px; font-size: 0.9em; color: #a0aec0;">
                     La prochaine réunion de suivi est prévue pour la semaine prochaine.
@@ -96,35 +88,25 @@ const MoMGenerator: React.FC<MoMGeneratorProps> = ({ actions, contacts, historiq
         `;
     };
 
-    const handleGenerateMoM = async () => {
-        if (!process.env.API_KEY) {
-            console.error("API_KEY environment variable not set.");
-            setError("La configuration du service de génération est incomplète.");
-            return;
-        }
-
+    const handleGenerateMoM = () => {
         setIsLoading(true);
         setError('');
         setGeneratedMoM('');
 
-        try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            const prompt = generatePrompt();
-
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: prompt,
-            });
-
-            setGeneratedMoM(response.text);
-
-        } catch (e: any) {
-            console.error("Erreur lors de la génération du MoM:", e);
-            setError(`Une erreur est survenue: ${e.message}`);
-        } finally {
-            setIsLoading(false);
-        }
+        // Brief timeout to show loading feedback
+        setTimeout(() => {
+            try {
+                const momContent = generateMoMTemplate();
+                setGeneratedMoM(momContent);
+            } catch (e: any) {
+                console.error("Erreur lors de la génération du template MoM:", e);
+                setError(`Une erreur est survenue: ${e.message}`);
+            } finally {
+                setIsLoading(false);
+            }
+        }, 200);
     };
+
 
     const handleCopyToClipboard = () => {
         if (!generatedMoM) return;
@@ -148,7 +130,7 @@ const MoMGenerator: React.FC<MoMGeneratorProps> = ({ actions, contacts, historiq
     return (
         <div className="h-full flex flex-col">
             <header className="mb-6 flex justify-between items-center">
-                <h2 className="text-3xl font-bold text-white">Générateur de Compte Rendu (MoM)</h2>
+                <h2 className="text-3xl font-bold text-white">Générateur de Template de Compte Rendu</h2>
                 <button
                     onClick={handleGenerateMoM}
                     disabled={isLoading}
@@ -160,7 +142,7 @@ const MoMGenerator: React.FC<MoMGeneratorProps> = ({ actions, contacts, historiq
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     ) : '📝'}
-                    <span className="ml-2">{isLoading ? 'Génération...' : 'Générer le Compte Rendu'}</span>
+                    <span className="ml-2">{isLoading ? 'Génération...' : 'Générer le Template'}</span>
                 </button>
             </header>
             <div className="flex-1 bg-gray-800/50 rounded-xl p-6 flex flex-col">
@@ -172,7 +154,7 @@ const MoMGenerator: React.FC<MoMGeneratorProps> = ({ actions, contacts, historiq
                         <div dangerouslySetInnerHTML={{ __html: generatedMoM }} />
                     ) : (
                          <div className="flex justify-center items-center h-full text-gray-500">
-                           L'aperçu du compte rendu généré par l'IA apparaîtra ici.
+                           L'aperçu du template de compte rendu apparaîtra ici.
                         </div>
                     )}
                 </div>
